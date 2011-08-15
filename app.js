@@ -9,7 +9,7 @@ var express     = require('express')
   , url         = require('url');
 
 
-var rdio = new Rdio('xsyhyjxpscbtxbsewq2mwfeh','Jp3TYytVTW','http://smooth-cloud-767.herokuap/oauth/callback');
+var rdio = new Rdio('xsyhyjxpscbtxbsewq2mwfeh','Jp3TYytVTW','http://smooth-cloud-767.herokuapp.com/oauth/callback');
 
 var redis_options = {},
     redis_url;
