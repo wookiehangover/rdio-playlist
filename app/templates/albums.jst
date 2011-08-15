@@ -1,0 +1,16 @@
+{{each albums}}
+  <li>
+    <a href="/api/getTracksForAlbumInCollection?album=${key}" class="album">
+      <span>${name}</span>
+      <img src="${icon}" width="120"/>
+    </a>
+
+    <ul class="track-list">
+      {{each tracks}}
+        <li>
+          <a href="#" class="add-to-playlist" data-track="${$value.key}" data-album="${key}">${$value.name}</a>
+        </li>
+      {{/each}}
+    </ul>
+  </li>
+{{/each}}

@@ -1,0 +1,30 @@
+{
+  "name": "rdio-playlist",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+      "express": "2.4.3"
+    , "jade": ">= 0.0.1"
+    , "oauth": "~0.9.3"
+    , "connect-redis": "~1.0.6"
+    , "jquery-tmpl-jst": "~0.0.2"
+    , "coffee-script": "~1.1.2"
+    , "uglify-js": "~1.0.6"
+    , "growl": "~1.1.0"
+  },
+  "devDependencies": {
+      "jasmine-node": "~1.0.6"
+    , "sinon":        "~1.1.1"
+  },
+  "engines": {
+    "node": "~0.4.7"
+  },
+  "author": "wookiehangover <sam@quickleft.com>",
+  "repository": {
+    "url": ""
+  },
+  "main": "app.js",
+  "scripts": {
+    "test": "jasmine-node test"
+  }
+}

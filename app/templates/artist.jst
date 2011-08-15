@@ -1,0 +1,15 @@
+<h2>Collection</h2>
+<form>
+  <div class="form-row">
+    <input type="text" name="filter" id="filter-artists" placeholder="&mdash;"/>
+  </div>
+</form>
+<ul class="tree" id="artists">
+  {{each artists}}
+    <li>
+      <a href="${url}" class="artist" data-cid="${id}" id="${artistKey}">${name}</a>
+    </li>
+  {{/each}}
+</ul>
+
+

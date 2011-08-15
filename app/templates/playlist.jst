@@ -1,0 +1,39 @@
+<li>
+  <a href="#">
+    <img src="${icon}" width="120"/>
+  </a>
+</li>
+
+/* track */
+<li class="form-row">
+  <input type="text" name="order" value="${track}" class="sm">
+  <strong>${name}</strong>
+  <span>${albumArtist}</span>
+</li>
+
+/* edit */
+<div class="form-row">
+  <input type="text" id="playlist-name" placeholder="Name" {{if playlist}}value="${playlist.name}"{{/if}}>
+  <div class="form-controls">
+    <input type="submit" value="Save">
+    <button>Cancel</button>
+  </div>
+</div>
+
+<div class="form-row">
+  <input type="text" id="playlist-desc" placeholder="Description" {{if playlist}}value="${playlist.description}"{{/if}}>
+</div>
+
+<div class="form-row">
+  <ul class="playlist-tracks">
+    {{each tracks}}
+      <li class="form-row">
+        <input type="text" name="order" value="${$index + 1}" class="sm">
+        <strong>${$value.name}</strong>
+        <span>${$value.albumArtist}</span>
+      </li>
+    {{/each}}
+  </ul>
+</div>
+
+
