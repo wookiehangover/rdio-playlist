@@ -9,7 +9,23 @@ var express     = require('express')
   , url         = require('url');
 
 
-var rdio = new Rdio('xsyhyjxpscbtxbsewq2mwfeh','Jp3TYytVTW','http://smooth-cloud-767.herokuapp.com/oauth/callback');
+var rdio = new Rdio('xsyhyjxpscbtxbsewq2mwfeh','Jp3TYytVTW','http://smooth-cloud-767.herokuap/oauth/callback');
+
+var redis_options = {},
+    redis_url;
+
+if( process.env.REDISTOGO_URL ){
+  redis_url = process.env.REDISTOGO_URL.replace('redis://','').split('@');
+
+  redis_options = {
+      host: redis_url[1].split(':')[0]
+    , port: redis_url[1].split(':')[1].replace('/','')
+    , db:   redis_url[0].split(':')[0]
+    , pass:   redis_url[0].split(':')[1]
+  };
+}
+
+var session_store = new RedisStore( redis_options );
 
 // Configuration
 
@@ -19,7 +35,7 @@ app.configure(function(){
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(express.cookieParser());
-  app.use(express.session({ secret: 'hotdogs are delicious', store: new RedisStore() }));
+  app.use(express.session({ secret: 'hotdogs are delicious', store: session_store }));
   app.use(app.router);
   app.use(express['static'](__dirname + '/public'));
 });
