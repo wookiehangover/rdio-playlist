@@ -120,6 +120,8 @@ form { float:left; width: 546px; }
 
 /* ------------------------------ Playlists ------------------------------ */
 
+#playlists li {width: 120px; background: #fff; margin: 0 18px 18px 0; }
+
 .create-playlist { float: left; margin-top: 20px; }
 .edit-playlist {
      -moz-transition: top 0.6s ease-in-out;

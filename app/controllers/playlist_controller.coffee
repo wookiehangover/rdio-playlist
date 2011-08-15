@@ -33,6 +33,7 @@ class Rdio.Views.Playlist extends Backbone.View
     "click a": "edit"
 
   edit: =>
+    Rdio.current_playlist = @model
     @model.getTracks =>
       Rdio.editPlaylist.render({ playlist: @model.toJSON(),tracks: @model.tracks.toJSON() })
     return false
@@ -65,7 +66,7 @@ class Rdio.Views.EditPlaylist extends Backbone.View
     desc = @el.find('#playlist-desc')
 
     $.get "/api/createPlaylist?name=#{name.val()}&description=#{desc.val()}&tracks=#{tracks.join(',')}", (data)=>
-      console.log(data)
+      $('#playlist-page ul').remove()
       Rdio.user.playlists = new Rdio.Collections.Playlists
 
     return false

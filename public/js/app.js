@@ -369,6 +369,7 @@
       "click a": "edit"
     };
     Playlist.prototype.edit = function() {
+      Rdio.current_playlist = this.model;
       this.model.getTracks(__bind(function() {
         return Rdio.editPlaylist.render({
           playlist: this.model.toJSON(),
@@ -410,7 +411,7 @@
       name = this.el.find('#playlist-name');
       desc = this.el.find('#playlist-desc');
       $.get("/api/createPlaylist?name=" + (name.val()) + "&description=" + (desc.val()) + "&tracks=" + (tracks.join(',')), __bind(function(data) {
-        console.log(data);
+        $('#playlist-page ul').remove();
         return Rdio.user.playlists = new Rdio.Collections.Playlists;
       }, this));
       return false;
