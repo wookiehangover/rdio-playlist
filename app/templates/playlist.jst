@@ -1,8 +1,6 @@
-<li>
-  <a href="#">
-    <img src="{{if icon}}${icon}{{else}}http://placekitten.com/120/120{{/if}}" width="120"/>
-  </a>
-</li>
+<a href="#">
+  <img src="{{if icon}}${icon}{{else}}http://placekitten.com/120/120{{/if}}" width="120"/>
+</a>
 
 /* track */
 <li class="form-row">
@@ -17,6 +15,9 @@
   <div class="form-controls">
     <input type="submit" value="Save">
     <button class="closer">Cancel</button>
+    {{if isNew === false}}
+      <button class="delete">Delete</button>
+    {{/if}}
   </div>
 </div>
 

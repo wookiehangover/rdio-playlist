@@ -153,7 +153,7 @@
     function Playlists() {
       Playlists.__super__.constructor.apply(this, arguments);
     }
-    Playlists.prototype.url = '/api/getPlaylists?extras=tracks';
+    Playlists.prototype.url = '/api/getPlaylists';
     Playlists.prototype.initialize = function() {
       this.model = Rdio.Models.Playlist;
       this.view = new Rdio.Views.Playlists;
@@ -178,14 +178,19 @@
     }
     Playlist.prototype.initialize = function() {
       this.tracks = new Rdio.Collections.Tracks;
-      this.view = new Rdio.Views.Playlist(this);
+      this.view = new Rdio.Views.Playlist({
+        model: this
+      });
       return this.view.render();
     };
     Playlist.prototype.getTracks = function(callback) {
-      if (this.get('tracks') != null) {
-        this.tracks = new Rdio.Collections.Tracks(this.get('tracks'));
+      if (this.get('key') == null) {
+        return callback();
       }
-      return callback();
+      return $.get("/api/get?keys=" + (this.get('key')) + "&extras=tracks", __bind(function(data) {
+        this.tracks = new Rdio.Collections.Tracks(data[this.get('key')].tracks);
+        return callback();
+      }, this));
     };
     return Playlist;
   })();
@@ -357,8 +362,7 @@
       Playlist.__super__.constructor.apply(this, arguments);
     }
     Playlist.prototype.tagName = 'li';
-    Playlist.prototype.initialize = function(model) {
-      this.model = model;
+    Playlist.prototype.initialize = function() {
       return this.render();
     };
     Playlist.prototype.render = function() {
@@ -369,6 +373,7 @@
     };
     Playlist.prototype.edit = function() {
       Rdio.current_playlist = this.model;
+      $('.edit-playlist').remove();
       this.model.getTracks(__bind(function() {
         if (this.edit == null) {
           return this.edit.render();
@@ -389,7 +394,9 @@
       this.create = __bind(this.create, this);
       this.update = __bind(this.update, this);
       this.savePlaylist = __bind(this.savePlaylist, this);
+      this.deletePlaylist = __bind(this.deletePlaylist, this);
       this.close = __bind(this.close, this);
+      this.updatedField = __bind(this.updatedField, this);
       this.render = __bind(this.render, this);
       this.initialize = __bind(this.initialize, this);
       EditPlaylist.__super__.constructor.apply(this, arguments);
@@ -413,20 +420,42 @@
       var body;
       body = {
         playlist: this.model.toJSON(),
-        tracks: this.model.tracks.toJSON()
+        tracks: this.model.tracks.toJSON(),
+        isNew: this.isNew || false
       };
       return $(this.el).html(JST.playlist_edit(body)).appendTo('#playlist-page').addClass('active');
     };
     EditPlaylist.prototype.events = {
       "click .closer": "close",
-      'click input[type="submit"]': "savePlaylist"
+      "click .delete": "deletePlaylist",
+      'click input[type="submit"]': "savePlaylist",
+      "change .playlist-name": "updatedField"
+    };
+    EditPlaylist.prototype.updatedField = function() {
+      this.model.set({
+        name: this.$('.playlist-name').val()
+      });
+      return this.hasChanged = true;
     };
     EditPlaylist.prototype.close = function() {
       $(this.el).removeClass('active');
       this.remove();
       return false;
     };
+    EditPlaylist.prototype.deletePlaylist = function() {
+      var c;
+      console.log('wut');
+      c = confirm("Are you sure you want to do that?");
+      if (c) {
+        $.get("/api/deletePlaylist?playlist=" + (this.model.get('key')), __bind(function() {
+          this.close();
+          return Rdio.user.playlists.remove(this.model);
+        }, this));
+      }
+      return false;
+    };
     EditPlaylist.prototype.savePlaylist = function() {
+      this.$(':text').blur();
       if (this.isNew) {
         this.create();
       } else {
@@ -435,7 +464,12 @@
       return false;
     };
     EditPlaylist.prototype.update = function() {
-      return $.get("/api/addToPlaylist?playlist=" + (this.model.get('key')) + "&tracks=" + (this.tracks.join(',')));
+      if (this.tracks.length > 0) {
+        $.get("/api/addToPlaylist?playlist=" + (this.model.get('key')) + "&tracks=" + (this.tracks.join(',')));
+      }
+      if (this.hasChanged === true) {
+        return $.get("/api/setPlaylistFields?playlist=" + (this.model.get('key')) + "&name=" + (this.$('.playlist-name').val()) + "&description=" + (this.$('.playlist-name').val()));
+      }
     };
     EditPlaylist.prototype.create = function() {
       var name;

@@ -79,8 +79,8 @@ body {
 /* ------------------------------ Layout ------------------------------ */
 /*column 120, gutter 18*/
 #container { width: 546px; margin: 20px auto 0; position: relative; z-index: 100; }
-#container section { float:left; clear:both; margin-bottom: 60px; }
-#container section > h2 { font-size: 24px; width: 546px; border-bottom:1px solid #666; }
+#container section { float:left; clear:both; margin-bottom: 20px; width: 534px; overflow:hidden;  }
+#container section > h2 { font-size: 24px; width: 100%; border-bottom:1px solid #666; }
 
 
 /* ------------------------------ Forms ------------------------------ */
@@ -120,9 +120,11 @@ form { float:left; width: 546px; }
 
 /* ------------------------------ Playlists ------------------------------ */
 
+#playlists { width: 552px; }
 #playlists li {width: 120px; background: #fff; margin: 0 18px 18px 0; }
+#playlists li a { padding: 0; }
 
-.create-playlist { float: left; margin-top: 20px; }
+.create-playlist { display: inline-block; }
 .edit-playlist {
      -moz-transition: top 0.6s ease-in-out;
        -o-transition: top 0.6s ease-in-out;
@@ -131,7 +133,7 @@ form { float:left; width: 546px; }
           transition: top 0.6s ease-in-out;
 
   position: fixed; top: -354px; left: 50%; margin-left: -273px;
-  width: 526px; padding: 10px; max-height: 334px;
+  width: 514px; padding: 10px; max-height: 334px;
   background: url(/images/modal.bg.png); color: #fff;
   overflow-y: scroll; -webkit-overflow-scrolling: touch;
 }

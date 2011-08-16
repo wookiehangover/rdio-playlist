@@ -19,8 +19,7 @@ class Rdio.Views.Playlists extends Backbone.View
 class Rdio.Views.Playlist extends Backbone.View
   tagName: 'li'
 
-  initialize: (model)->
-    @model = model
+  initialize: ->
     @render()
 
   render: ->
@@ -33,6 +32,7 @@ class Rdio.Views.Playlist extends Backbone.View
 
   edit: =>
     Rdio.current_playlist = @model
+    $('.edit-playlist').remove();
     @model.getTracks =>
       unless @edit?
         @edit.render()
@@ -65,22 +65,43 @@ class Rdio.Views.EditPlaylist extends Backbone.View
   tracks: []
 
   render: =>
-    body = { playlist: @model.toJSON(),tracks: @model.tracks.toJSON() }
+    body =
+      playlist: @model.toJSON()
+      tracks: @model.tracks.toJSON()
+      isNew: @isNew || false
+
     $(@el)
       .html( JST.playlist_edit( body ) )
       .appendTo('#playlist-page')
       .addClass('active')
 
   events:
-    "click .closer": "close"
+    "click .closer":              "close"
+    "click .delete":              "deletePlaylist"
     'click input[type="submit"]': "savePlaylist"
+    "change .playlist-name":      "updatedField"
+
+  updatedField: =>
+    @model.set { name: @$('.playlist-name').val() }
+    @hasChanged = true
 
   close: =>
     $(@el).removeClass('active')
     @remove()
     return false
 
+  deletePlaylist: =>
+    console.log('wut')
+    c = confirm "Are you sure you want to do that?"
+    if c
+      $.get "/api/deletePlaylist?playlist=#{@model.get('key')}", =>
+        @close()
+        Rdio.user.playlists.remove( @model )
+
+    return false
+
   savePlaylist: =>
+    @$(':text').blur()
     if @isNew
       @create()
     else
@@ -90,7 +111,12 @@ class Rdio.Views.EditPlaylist extends Backbone.View
 
 
   update: =>
-    $.get "/api/addToPlaylist?playlist=#{@model.get('key')}&tracks=#{@tracks.join(',')}"
+    if @tracks.length > 0
+      $.get "/api/addToPlaylist?playlist=#{@model.get('key')}&tracks=#{@tracks.join(',')}"
+
+    if @hasChanged is true
+      $.get "/api/setPlaylistFields?playlist=#{@model.get('key')}&name=#{@$('.playlist-name').val()}&description=#{@$('.playlist-name').val()}"
+
 
 
   create: =>
