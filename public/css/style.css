@@ -143,6 +143,8 @@ form { float:left; width: 546px; }
 .edit-playlist .form-row span:before { content: "–"; padding-right: 10px; }
 .edit-playlist .form-row .form-controls { float: right;}
 
+/* ------------------------------ Search ------------------------------ */
+#clear { display:none; }
 
 /* ------------------------------ Loading Overlay ------------------------------ */
 

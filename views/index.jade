@@ -3,18 +3,15 @@ section#playlist-page
   ul#playlists.tree
   .create-playlist
     button.new New Playlist
-    form.edit-playlist
-      .form-row
-        input(type="text", placeholder="Name")
-      .form-row
-        ul.playlist-tracks
-          li.form-row
-            input(type="text", name="order", value="1", class="sm")
-            strong Track Name
-            span Artist
-          li.form-row
-            strong You need to add some songs.
-      .form-row
-        input(type="submit", value="Save")
-        button Cancel
+section#search-page
+  h2 Search
+  form#search(action="/api/search")
+    .form-row
+      input(type="text",placeholder="&mdash;",id="search-query")
+    .form-row
+      input(type="submit",value="Submit")
+      button#clear Clear
+
+  ul.tree#search-results
+
 section#artists-page

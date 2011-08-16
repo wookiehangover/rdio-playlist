@@ -61,6 +61,7 @@
   */
   $(function() {
     new Rdio.Views.app;
+    Rdio.search = new Rdio.Views.Search;
     Rdio.router = new Rdio.Routes;
     Backbone.history.start({
       pushState: true
@@ -152,11 +153,15 @@
     function Playlists() {
       Playlists.__super__.constructor.apply(this, arguments);
     }
-    Playlists.prototype.url = '/api/getPlaylists?extras=trackKeys';
+    Playlists.prototype.url = '/api/getPlaylists?extras=tracks';
     Playlists.prototype.initialize = function() {
       this.model = Rdio.Models.Playlist;
       this.view = new Rdio.Views.Playlists;
-      return $.get(this.url).success(__bind(function(data) {
+      return $.ajax({
+        type: 'GET',
+        url: this.url,
+        global: false
+      }).success(__bind(function(data) {
         return this.add(data.owned);
       }, this));
     };
@@ -172,11 +177,15 @@
       Playlist.__super__.constructor.apply(this, arguments);
     }
     Playlist.prototype.initialize = function() {
-      return this.view = new Rdio.Views.Playlist(this);
+      this.tracks = new Rdio.Collections.Tracks;
+      this.view = new Rdio.Views.Playlist(this);
+      return this.view.render();
     };
     Playlist.prototype.getTracks = function(callback) {
-      this.tracks = new Rdio.Collections.Tracks(null, this.get('trackKeys'));
-      return this.tracks.fetch(callback);
+      if (this.get('tracks') != null) {
+        this.tracks = new Rdio.Collections.Tracks(this.get('tracks'));
+      }
+      return callback();
     };
     return Playlist;
   })();
@@ -188,16 +197,7 @@
     function NewPlaylist() {
       NewPlaylist.__super__.constructor.apply(this, arguments);
     }
-    NewPlaylist.prototype.initialize = function(view) {
-      this.tracks = new Rdio.Collections.Tracks;
-      this.view = Rdio.editPlaylist;
-      this.view.render();
-      return this.tracks.bind('add', __bind(function() {
-        return this.view.render({
-          tracks: this.tracks.toJSON()
-        });
-      }, this));
-    };
+    NewPlaylist.prototype.initialize = function(view) {};
     return NewPlaylist;
   })();
   /*
@@ -282,7 +282,7 @@
       var $this;
       $this = $(e.target);
       if (Rdio.current_playlist != null) {
-        Rdio.current_playlist.tracks.addTrack($this.data('track'));
+        Rdio.current_playlist.model.tracks.addTrack($this.data('track'));
       }
       return false;
     };
@@ -336,14 +336,13 @@
       Playlists.__super__.constructor.apply(this, arguments);
     }
     Playlists.prototype.el = $('#playlist-page');
-    Playlists.prototype.initialize = function() {
-      return Rdio.editPlaylist = new Rdio.Views.EditPlaylist;
-    };
     Playlists.prototype.events = {
       "click .new": "newPlaylist"
     };
     Playlists.prototype.newPlaylist = function() {
-      Rdio.current_playlist = new Rdio.Models.NewPlaylist;
+      var p;
+      p = new Rdio.Models.Playlist();
+      p.view.edit();
       return false;
     };
     return Playlists;
@@ -371,10 +370,11 @@
     Playlist.prototype.edit = function() {
       Rdio.current_playlist = this.model;
       this.model.getTracks(__bind(function() {
-        return Rdio.editPlaylist.render({
-          playlist: this.model.toJSON(),
-          tracks: this.model.tracks.toJSON()
-        });
+        if (this.edit == null) {
+          return this.edit.render();
+        } else {
+          return this.edit = new Rdio.Views.EditPlaylist(this.model);
+        }
       }, this));
       return false;
     };
@@ -386,36 +386,111 @@
   Rdio.Views.EditPlaylist = (function() {
     __extends(EditPlaylist, Backbone.View);
     function EditPlaylist() {
+      this.create = __bind(this.create, this);
+      this.update = __bind(this.update, this);
       this.savePlaylist = __bind(this.savePlaylist, this);
       this.close = __bind(this.close, this);
       this.render = __bind(this.render, this);
+      this.initialize = __bind(this.initialize, this);
       EditPlaylist.__super__.constructor.apply(this, arguments);
     }
-    EditPlaylist.prototype.el = $('.edit-playlist');
-    EditPlaylist.prototype.render = function(data) {
-      return this.el.html(JST.playlist_edit(data)).addClass('active');
+    EditPlaylist.prototype.tagName = 'form';
+    EditPlaylist.prototype.className = 'edit-playlist';
+    EditPlaylist.prototype.initialize = function(model) {
+      Rdio.current_playlist = this;
+      this.model = model;
+      if (this.model.tracks.length === 0) {
+        this.isNew = true;
+      }
+      this.model.tracks.bind('add', __bind(function(track) {
+        this.tracks.push(track.get('key'));
+        return this.render();
+      }, this));
+      return this.render();
+    };
+    EditPlaylist.prototype.tracks = [];
+    EditPlaylist.prototype.render = function() {
+      var body;
+      body = {
+        playlist: this.model.toJSON(),
+        tracks: this.model.tracks.toJSON()
+      };
+      return $(this.el).html(JST.playlist_edit(body)).appendTo('#playlist-page').addClass('active');
     };
     EditPlaylist.prototype.events = {
-      "click button": "close",
+      "click .closer": "close",
       'click input[type="submit"]': "savePlaylist"
     };
     EditPlaylist.prototype.close = function() {
-      this.el.removeClass('active');
+      $(this.el).removeClass('active');
+      this.remove();
       return false;
     };
     EditPlaylist.prototype.savePlaylist = function() {
-      var desc, name, tracks;
-      tracks = Rdio.current_playlist.tracks.map(function(t) {
-        return t.get('key');
-      });
-      name = this.el.find('#playlist-name');
-      desc = this.el.find('#playlist-desc');
-      $.get("/api/createPlaylist?name=" + (name.val()) + "&description=" + (desc.val()) + "&tracks=" + (tracks.join(',')), __bind(function(data) {
-        $('#playlist-page ul').remove();
-        return Rdio.user.playlists = new Rdio.Collections.Playlists;
+      if (this.isNew) {
+        this.create();
+      } else {
+        this.update();
+      }
+      return false;
+    };
+    EditPlaylist.prototype.update = function() {
+      return $.get("/api/addToPlaylist?playlist=" + (this.model.get('key')) + "&tracks=" + (this.tracks.join(',')));
+    };
+    EditPlaylist.prototype.create = function() {
+      var name;
+      name = this.$('.playlist-name');
+      return $.get("/api/createPlaylist?name=" + (name.val()) + "&description=test&tracks=" + (this.tracks.join(',')));
+    };
+    return EditPlaylist;
+  })();
+  /*
+    Views#Search
+  */
+  Rdio.Views.Search = (function() {
+    __extends(Search, Backbone.View);
+    function Search() {
+      this.clear = __bind(this.clear, this);
+      this.loadArtistAlbums = __bind(this.loadArtistAlbums, this);
+      this.search = __bind(this.search, this);
+      Search.__super__.constructor.apply(this, arguments);
+    }
+    Search.prototype.el = $('#search-page');
+    Search.prototype.initialize = function() {};
+    Search.prototype.events = {
+      "submit #search": "search",
+      "click .artist": "loadArtistAlbums",
+      "click #clear": "clear"
+    };
+    Search.prototype.search = function(e) {
+      var $form;
+      $form = $(e.target);
+      $.get("/api/search?query=" + ($form.find('#search-query').val()) + "&types=Artist", __bind(function(data) {
+        this.$('#clear').show();
+        return this.$('##search-results').html(JST.artist_list({
+          artists: data.results
+        }));
       }, this));
       return false;
     };
-    return EditPlaylist;
+    Search.prototype.loadArtistAlbums = function(e) {
+      var $parent, $this;
+      e.preventDefault();
+      $this = $(e.target);
+      $parent = $this.parent().toggleClass('active');
+      if ($parent.find('.tree-2').length > 0) {
+        $parent.find('.tree-2').slideToggle();
+        return;
+      }
+      return $.get("/api/getAlbumsForArtist?artist=" + ($this.data('key')) + "&extras=tracks", __bind(function(data) {
+        return this.albums = new Rdio.Collections.ArtistAlbums(data, $parent);
+      }, this));
+    };
+    Search.prototype.clear = function() {
+      this.$('#clear').hide();
+      this.$('#search-results').empty();
+      return false;
+    };
+    return Search;
   })();
 }).call(this);

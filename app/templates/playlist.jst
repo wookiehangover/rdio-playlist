@@ -1,6 +1,6 @@
 <li>
   <a href="#">
-    <img src="${icon}" width="120"/>
+    <img src="{{if icon}}${icon}{{else}}http://placekitten.com/120/120{{/if}}" width="120"/>
   </a>
 </li>
 
@@ -13,15 +13,11 @@
 
 /* edit */
 <div class="form-row">
-  <input type="text" id="playlist-name" placeholder="Name" {{if playlist}}value="${playlist.name}"{{/if}}>
+  <input type="text" class="playlist-name" placeholder="Name" {{if playlist}}value="${playlist.name}"{{/if}}>
   <div class="form-controls">
     <input type="submit" value="Save">
-    <button>Cancel</button>
+    <button class="closer">Cancel</button>
   </div>
-</div>
-
-<div class="form-row">
-  <input type="text" id="playlist-desc" placeholder="Description" {{if playlist}}value="${playlist.description}"{{/if}}>
 </div>
 
 <div class="form-row">

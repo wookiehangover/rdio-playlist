@@ -42,6 +42,9 @@ class Rdio.Routes extends Backbone.Router
 ###
 $ ->
   new Rdio.Views.app
+
+  Rdio.search = new Rdio.Views.Search
+
   Rdio.router = new Rdio.Routes
   Backbone.history.start({ pushState: true })
 

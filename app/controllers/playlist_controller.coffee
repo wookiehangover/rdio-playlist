@@ -4,14 +4,13 @@
 class Rdio.Views.Playlists extends Backbone.View
   el: $('#playlist-page')
 
-  initialize: ->
-    Rdio.editPlaylist = new Rdio.Views.EditPlaylist
-
   events:
     "click .new": "newPlaylist"
 
   newPlaylist: =>
-    Rdio.current_playlist = new Rdio.Models.NewPlaylist
+    p = new Rdio.Models.Playlist()
+    p.view.edit()
+
     return false
 
 ###
@@ -35,7 +34,10 @@ class Rdio.Views.Playlist extends Backbone.View
   edit: =>
     Rdio.current_playlist = @model
     @model.getTracks =>
-      Rdio.editPlaylist.render({ playlist: @model.toJSON(),tracks: @model.tracks.toJSON() })
+      unless @edit?
+        @edit.render()
+      else
+        @edit = new Rdio.Views.EditPlaylist( @model )
     return false
 
 
@@ -43,30 +45,58 @@ class Rdio.Views.Playlist extends Backbone.View
   Views#EditPlaylist
 ###
 class Rdio.Views.EditPlaylist extends Backbone.View
-  el: $('.edit-playlist')
+  tagName: 'form'
 
-  render: (data)=>
-    @el
-      .html( JST.playlist_edit(data) )
+  className: 'edit-playlist'
+
+  initialize: ( model )=>
+    Rdio.current_playlist = @
+    @model = model
+
+    if @model.tracks.length is 0
+      @isNew = true
+
+    @model.tracks.bind 'add', (track)=>
+      @tracks.push(track.get('key'))
+      @render()
+
+    @render()
+
+  tracks: []
+
+  render: =>
+    body = { playlist: @model.toJSON(),tracks: @model.tracks.toJSON() }
+    $(@el)
+      .html( JST.playlist_edit( body ) )
+      .appendTo('#playlist-page')
       .addClass('active')
 
   events:
-    "click button": "close"
+    "click .closer": "close"
     'click input[type="submit"]': "savePlaylist"
 
   close: =>
-    @el.removeClass('active')
+    $(@el).removeClass('active')
+    @remove()
     return false
 
   savePlaylist: =>
-    tracks = Rdio.current_playlist.tracks.map (t) ->
-      return t.get('key')
-
-    name = @el.find('#playlist-name')
-    desc = @el.find('#playlist-desc')
-
-    $.get "/api/createPlaylist?name=#{name.val()}&description=#{desc.val()}&tracks=#{tracks.join(',')}", (data)=>
-      $('#playlist-page ul').remove()
-      Rdio.user.playlists = new Rdio.Collections.Playlists
+    if @isNew
+      @create()
+    else
+      @update()
 
     return false
+
+
+  update: =>
+    $.get "/api/addToPlaylist?playlist=#{@model.get('key')}&tracks=#{@tracks.join(',')}"
+
+
+  create: =>
+    name = @$('.playlist-name')
+
+    $.get "/api/createPlaylist?name=#{name.val()}&description=test&tracks=#{@tracks.join(',')}"
+
+
+

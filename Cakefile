@@ -25,6 +25,7 @@ prodCoffeeFiles = [
   'controllers/album_controller'
   'controllers/artist_controller'
   'controllers/playlist_controller'
+  'controllers/search_controller'
 ]
 
 prodLibs =

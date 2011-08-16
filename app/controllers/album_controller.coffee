@@ -29,6 +29,6 @@ class Rdio.Views.ArtistAlbums extends Backbone.View
     $this = $(e.target)
 
     if Rdio.current_playlist?
-      Rdio.current_playlist.tracks.addTrack( $this.data('track') )
+      Rdio.current_playlist.model.tracks.addTrack( $this.data('track') )
 
     return false
