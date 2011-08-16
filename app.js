@@ -9,10 +9,14 @@ var express     = require('express')
   , url         = require('url');
 
 
-//var url_base = 'http://smooth-cloud-767.herokuapp.com';
-var url_base = 'http://batman.local:3000';
+var url_base = 'http://listless.herokuapp.com';
+//var url_base = 'http://batman.local:3000';
 
-var rdio = new Rdio('xsyhyjxpscbtxbsewq2mwfeh','Jp3TYytVTW', url_base +'/oauth/callback');
+var rdio = new Rdio(
+    process.env.API_KEY
+  , process.env.API_SECRET
+  , url_base +'/oauth/callback'
+);
 
 var redis_options = {},
     redis_url;
@@ -24,7 +28,7 @@ if( process.env.REDISTOGO_URL ){
       host: redis_url[1].split(':')[0]
     , port: redis_url[1].split(':')[1].replace('/','')
     , db:   redis_url[0].split(':')[0]
-    , pass:   redis_url[0].split(':')[1]
+    , pass: redis_url[0].split(':')[1]
   };
 }
 
