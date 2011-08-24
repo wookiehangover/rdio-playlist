@@ -17,6 +17,11 @@ class Rdio.Views.app extends Backbone.View
   el: $('body')
 
   initialize: ->
+    $('.tip').tipsy
+      gravity: $.fn.tipsy.autoNS
+      title: 'data-tip'
+      live: true
+
     Rdio.user.artists   = new Rdio.Collections.Artists
     Rdio.user.playlists = new Rdio.Collections.Playlists
 
@@ -41,6 +46,8 @@ class Rdio.Routes extends Backbone.Router
   Bootstrap
 ###
 $ ->
+  MBP.scaleFix()
+
   new Rdio.Views.app
 
   Rdio.search = new Rdio.Views.Search
