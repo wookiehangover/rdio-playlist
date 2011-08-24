@@ -8,27 +8,17 @@ var express     = require('express')
   , RedisStore  = require('connect-redis')(express)
   , url         = require('url');
 
-
-var url_base = 'http://listless.herokuapp.com';
-//var url_base = 'http://batman.local:3000';
-
-var rdio = new Rdio(
-    process.env.API_KEY
-  , process.env.API_SECRET
-  , url_base +'/oauth/callback'
-);
-
 var redis_options = {},
     redis_url;
 
 if( process.env.REDISTOGO_URL ){
-  redis_url = process.env.REDISTOGO_URL.replace('redis://','').split('@');
+  redis_url = url.parse(process.env.REDISTOGO_URL);
 
   redis_options = {
-      host: redis_url[1].split(':')[0]
-    , port: redis_url[1].split(':')[1].replace('/','')
-    , db:   redis_url[0].split(':')[0]
-    , pass: redis_url[0].split(':')[1]
+      host: redis_url.hostname
+    , port: redis_url.port
+    , db:   redis_url.auth.split(':')[0]
+    , pass: redis_url.auth.split(':')[1]
   };
 }
 
@@ -47,13 +37,23 @@ app.configure(function(){
   app.use(express['static'](__dirname + '/public'));
 });
 
+var url_base;
+
 app.configure('development', function(){
+  url_base = 'http://batman.local:3000';
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true })); 
 });
 
 app.configure('production', function(){
+  url_base = 'http://listless.herokuapp.com';
   app.use(express.errorHandler()); 
 });
+
+var rdio = new Rdio(
+    process.env.API_KEY
+  , process.env.API_SECRET
+  , url_base +'/oauth/callback'
+);
 
 // Routes
 
@@ -78,7 +78,6 @@ app.get('/api/:method', function(req, res){
     res.render('login', { layout: 'login_layout' });
   }
 });
-
 
 app.get('/login', function(req, res){
   rdio.getRequestToken(function(err, token, token_secret, results){
@@ -107,15 +106,8 @@ app.get('/', function(req, res){
   }
 });
 
-app.get('/artist*', function(req, res){
-  if( req.session.oauth_access_token && req.session.oauth_access_token_secret ){
-    res.render('index');
-  } else {
-    res.render('login', { layout: 'login_layout.jade' });
-  }
-});
-
 var port = process.env.PORT || 3000;
 
 app.listen(port);
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
+
