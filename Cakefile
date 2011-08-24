@@ -28,15 +28,46 @@ prodCoffeeFiles = [
   'controllers/search_controller'
 ]
 
+sharedCoffeeFiles = [
+  'models/artist'
+]
+
+sharedOutput = "lib"
+
 prodLibs =
   libs: [
     'libs/underscore-min'
     'libs/backbone-min'
     'mylibs/jquery.tmpl.min'
     'mylibs/jquery.quicksearch'
+    'mylibs/jquery.tipsy'
     'mylibs/ql_cache'
     'mylibs/helper'
   ]
+
+
+
+task 'build:shared', 'Build a single JavaScript file from prod coffeescript files', ->
+
+  util.log "Appending #{sharedCoffeeFiles.length} files to "
+
+  fs.readFile "lib/models/header.coffee", "utf8", ( err, data ) ->
+    header = data
+
+    for file, index in sharedCoffeeFiles then do (file, index) ->
+      fs.readFile "app/#{file}.coffee", 'utf8', (err, fileContents) ->
+        handleError(err) if err
+
+        fs.writeFile "#{sharedOutput}/#{file}.js", [header, fileContents].join('\n\n'), 'utf8', (err) ->
+          handleError(err) if err
+
+          exec "coffee --output #{sharedOutput} --compile #{sharedOutput}/#{file}.js", (err, stdout, stderr) ->
+            handleError(err) if err
+            fs.unlink "#{sharedOutput}/#{file}.js", (err) -> handleError(err) if err
+
+
+
+
 
 
 ###
@@ -79,7 +110,9 @@ task 'build:all', 'Build production and test CoffeeScript', ->
 
 task 'build', 'Build a single JavaScript file from prod coffeescript files', ->
     util.log "Building #{prodTargetJsFile}"
-    appContents = new Array remaining = prodCoffeeFiles.length
+    appContents = []
+    remaining = prodCoffeeFiles.length
+
     util.log "Appending #{prodCoffeeFiles.length} files to #{prodTargetCoffeeFile}"
 
     for file, index in prodCoffeeFiles then do (file, index) ->
