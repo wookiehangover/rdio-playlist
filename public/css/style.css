@@ -79,7 +79,7 @@ body {
 /* ------------------------------ Layout ------------------------------ */
 /*column 120, gutter 18*/
 #container { width: 546px; margin: 20px auto 0; position: relative; z-index: 100; }
-#container section { float:left; clear:both; margin-bottom: 20px; width: 534px; overflow:hidden;  }
+#container section { float:left; margin-bottom: 20px; width: 534px; overflow:hidden;  }
 #container section > h2 { font-size: 24px; width: 100%; border-bottom:1px solid #666; }
 
 
@@ -100,6 +100,8 @@ form { float:left; width: 546px; }
 #login-page #popup { font-size: 16px; font-weight: bold; float:left; padding-bottom: 20px; }
 #login-page #submit-pin { clear:both; display:none; }
 
+#container iframe { width: 100%; border:none; height: 400px; }
+
 /* ------------------------------ Artists ------------------------------ */
 #artists-page .artists { width: 546px; display: inline-block; }
 
@@ -112,11 +114,15 @@ form { float:left; width: 546px; }
 
 .tree-2 { margin: 0; padding: 0; width: 564px; border-bottom: 20px solid white;}
 .tree-2 > li { padding: 10px 0; border-bottom: 1px solid #ccc; background: white;  }
+.tree-2 > li a.album { display: inline-block; }
 .tree-2 > li:nth-of-type(2n) { background: #f7f7f7; }
 .tree-2 li span { width: 120px; display: inline-block; display:none; }
 
 .track-list { margin: 0 0 0 18px; float: right; width: 422px; padding: 0; }
 .track-list li a { padding: 6px 0 4px; display:inline-block; }
+
+.disabled { text-decoration: none; opacity: 0.5; cursor: default; }
+.disabled:hover { color: #000; }
 
 /* ------------------------------ Playlists ------------------------------ */
 
@@ -132,12 +138,11 @@ form { float:left; width: 546px; }
       -ms-transition: top 0.6s ease-in-out;
           transition: top 0.6s ease-in-out;
 
-  position: fixed; top: -354px; left: 50%; margin-left: -273px;
-  width: 514px; padding: 10px; max-height: 334px;
+  width: 514px; padding: 10px; max-height: 290px;
   background: url(/images/modal.bg.png); color: #fff;
   overflow-y: scroll; -webkit-overflow-scrolling: touch;
 }
-.edit-playlist.active { top: 0px; z-index: 1000; display: block; }
+.edit-playlist.active { display: block; }
 
 .edit-playlist ul { list-style-type: none; margin: 0; padding: 0; }
 .edit-playlist .form-row .sm { margin-right: 18px; }
@@ -163,6 +168,34 @@ form { float:left; width: 546px; }
 
 #loader span img { margin-left: 6px; }
 
+/* ------------------------------ Tipsy ------------------------------ */
+
+.tipsy { font-size: 14px; position: absolute; padding: 5px; z-index: 100000; }
+.tipsy-inner { background-color: #000; color: #FFF; max-width: 200px; padding: 5px 8px 4px 8px; text-align: center; }
+
+/* Rounded corners */
+.tipsy-inner { border-radius: 3px; -moz-border-radius: 3px; -webkit-border-radius: 3px; }
+
+/* Uncomment for shadow */
+/*.tipsy-inner { box-shadow: 0 0 5px #000000; -webkit-box-shadow: 0 0 5px #000000; -moz-box-shadow: 0 0 5px #000000; }*/
+
+.tipsy-arrow { position: absolute; width: 0; height: 0; border: 5px solid transparent; }
+
+/* Rules to colour arrows */
+.tipsy-arrow-n { border-bottom-color: #000; }
+.tipsy-arrow-s { border-top-color: #000; }
+.tipsy-arrow-e { border-left-color: #000; }
+.tipsy-arrow-w { border-right-color: #000; }
+
+.tipsy-n .tipsy-arrow, .tipsy-nw .tipsy-arrow, .tipsy-ne .tipsy-arrow { top: 0; border-top: none; }
+.tipsy-s .tipsy-arrow, .tipsy-sw .tipsy-arrow, .tipsy-se .tipsy-arrow { bottom: 0; border-bottom: none; }
+.tipsy-n .tipsy-arrow, .tipsy-s .tipsy-arrow { left: 50%; margin-left: -5px; }
+.tipsy-nw .tipsy-arrow, .tipsy-sw .tipsy-arrow { left: 10px; }
+.tipsy-ne .tipsy-arrow, .tipsy-se .tipsy-arrow { right: 10px; }
+.tipsy-e .tipsy-arrow, .tipsy-w .tipsy-arrow { top: 50%; margin-top: -5px; }
+.tipsy-e .tipsy-arrow { right: 0; border-right: none; }
+.tipsy-w .tipsy-arrow { left: 0; border-left: none; }
+
 
 /* ==|== non-semantic helper classes ======================================== */
 .ir { display: block; border: 0; text-indent: -999em; overflow: hidden; background-color: transparent; background-repeat: no-repeat; text-align: left; direction: ltr; }
@@ -183,10 +216,30 @@ form { float:left; width: 546px; }
 
 }
 
-@media only screen and (min-width: 768px) {
-
+@media only screen and (max-width: 768px) {
+  .edit-playlist { position: fixed; top: -354px; left: 50%; margin-left: -273px; }
+  .edit-playlist.active { top:0; z-index: 1000;}
 }
 
+@media only screen and (min-width: 1024px) {
+  #container { width: 1024px; position: relative; }
+  #playlist-page { width: 460px !important; margin-right: 18px; position: fixed; height: auto; }
+  #playlists { width: 460px !important;}
+
+  .edit-playlist { float:left; clear:both; margin: 20px 0 0 0; width: 440px;}
+
+  #artists-page, #search-page { position: relative; left: 478px; }
+}
+
+@media only screen and (max-width: 1024px) and (orientation:landscape) {
+  #container { margin-top: 0; }
+  h2 { margin-top: 4px; }
+  #playlist-page { margin-left: 9px; }
+  #playlists {  }
+
+  .edit-playlist { position: fixed; bottom: 10px; left: 9px; max-height: 380px; height: 380px; }
+  #artists-page, #search-page { margin-left: 9px; }
+}
 
 
 /* ==|== print styles ======================================================= */

@@ -29,6 +29,11 @@
     }
     app.prototype.el = $('body');
     app.prototype.initialize = function() {
+      $('.tip').tipsy({
+        gravity: $.fn.tipsy.autoNS,
+        title: 'data-tip',
+        live: true
+      });
       Rdio.user.artists = new Rdio.Collections.Artists;
       return Rdio.user.playlists = new Rdio.Collections.Playlists;
     };
@@ -60,6 +65,7 @@
     Bootstrap
   */
   $(function() {
+    MBP.scaleFix();
     new Rdio.Views.app;
     Rdio.search = new Rdio.Views.Search;
     Rdio.router = new Rdio.Routes;
@@ -378,7 +384,9 @@
         if (this.edit == null) {
           return this.edit.render();
         } else {
-          return this.edit = new Rdio.Views.EditPlaylist(this.model);
+          return this.edit = new Rdio.Views.EditPlaylist({
+            model: this.model
+          });
         }
       }, this));
       return false;
@@ -403,9 +411,8 @@
     }
     EditPlaylist.prototype.tagName = 'form';
     EditPlaylist.prototype.className = 'edit-playlist';
-    EditPlaylist.prototype.initialize = function(model) {
+    EditPlaylist.prototype.initialize = function() {
       Rdio.current_playlist = this;
-      this.model = model;
       if (this.model.tracks.length === 0) {
         this.isNew = true;
       }
@@ -417,13 +424,22 @@
     };
     EditPlaylist.prototype.tracks = [];
     EditPlaylist.prototype.render = function() {
-      var body;
+      var body, height;
       body = {
         playlist: this.model.toJSON(),
         tracks: this.model.tracks.toJSON(),
         isNew: this.isNew || false
       };
-      return $(this.el).html(JST.playlist_edit(body)).appendTo('#playlist-page').addClass('active');
+      if (window.orientation == null) {
+        height = $(window).height() - ($('#playlist-page').height() + 72);
+      }
+      $(this.el).html(JST.playlist_edit(body)).appendTo('#playlist-page').addClass('active');
+      if (height != null) {
+        return $(this.el).css({
+          height: 'auto',
+          'max-height': height
+        });
+      }
     };
     EditPlaylist.prototype.events = {
       "click .closer": "close",

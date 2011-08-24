@@ -1,14 +1,13 @@
 {{each albums}}
   <li>
-    <a href="/api/getTracksForAlbumInCollection?album=${key}" class="album">
-      <span>${name}</span>
-      <img src="${icon}" width="120"/>
+    <a href="/api/getTracksForAlbumInCollection?album=${key}" class="album tip" data-tip="${name}">
+      <img src="${icon}" width="120" {{if canStream === false}}class="disabled"{{/if}}/>
     </a>
 
     <ul class="track-list">
       {{each tracks}}
         <li>
-          <a href="#" class="add-to-playlist" data-track="${$value.key}" data-album="${key}">${$value.name}</a>
+          <a href="#" class="{{if $value.canStream}}add-to-playlist{{else}}disabled{{/if}}" data-track="${$value.key}" data-album="${key}">${$value.name}</a>
         </li>
       {{/each}}
     </ul>

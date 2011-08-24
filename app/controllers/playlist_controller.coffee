@@ -32,12 +32,12 @@ class Rdio.Views.Playlist extends Backbone.View
 
   edit: =>
     Rdio.current_playlist = @model
-    $('.edit-playlist').remove();
+    $('.edit-playlist').remove()
     @model.getTracks =>
       unless @edit?
         @edit.render()
       else
-        @edit = new Rdio.Views.EditPlaylist( @model )
+        @edit = new Rdio.Views.EditPlaylist({ model: @model })
     return false
 
 
@@ -49,9 +49,8 @@ class Rdio.Views.EditPlaylist extends Backbone.View
 
   className: 'edit-playlist'
 
-  initialize: ( model )=>
+  initialize: =>
     Rdio.current_playlist = @
-    @model = model
 
     if @model.tracks.length is 0
       @isNew = true
@@ -70,10 +69,15 @@ class Rdio.Views.EditPlaylist extends Backbone.View
       tracks: @model.tracks.toJSON()
       isNew: @isNew || false
 
+    unless window.orientation?
+      height = $(window).height() - ( $('#playlist-page').height() + 72 )
+
     $(@el)
       .html( JST.playlist_edit( body ) )
       .appendTo('#playlist-page')
       .addClass('active')
+
+    $(@el).css({ height: 'auto', 'max-height': height }) if height?
 
   events:
     "click .closer":              "close"
